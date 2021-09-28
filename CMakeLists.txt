@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 3.0)
+
 project(pkt)
 
 add_library(${PROJECT_NAME}
