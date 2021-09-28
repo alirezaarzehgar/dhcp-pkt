@@ -3,6 +3,8 @@
 
 #include "pkt/analyze.h"
 
+#define PKT_GEN_CALLBACK_NULL { NULL, NULL }
+
 typedef void (*pktGenCallbackFunc_t) (void *, void *);
 
 struct pktGenCallback
@@ -15,8 +17,7 @@ struct pktGenCallback
 typedef struct pktGenCallback pktGenCallback_t;
 
 int pktGenOffer (pktDhcpPacket_t *discovery, pktDhcpPacket_t *offer,
-                 pktGenCallback_t *blocks, size_t blocksLen, pktGenCallback_t *options,
-                 size_t optionsLen);
+                 pktGenCallback_t *blocks, pktGenCallback_t *options);
 
 int pktGenAck (pktDhcpPacket_t *request, pktDhcpPacket_t *ack);
 

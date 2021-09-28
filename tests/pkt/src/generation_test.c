@@ -120,6 +120,7 @@ pktGenOfferTest()
   pktGenCallback_t blocks[] =
   {
     {.func = (pktGenCallbackFunc_t)pktGenFieldYourIpAddress, .param = "192.168.133.144"},
+    PKT_GEN_CALLBACK_NULL,
   };
 
   pktGenCallback_t options[] =
@@ -129,13 +130,10 @@ pktGenOfferTest()
     {.func = (pktGenCallbackFunc_t)pktGenOptSubnetMask, .param = "255.255.255.0"},
     {.func = (pktGenCallbackFunc_t)pktGenOptRouter, .param = "192.168.1.1"},
     {.func = (pktGenCallbackFunc_t)pktGenOptDomainName, .param = "example.org"},
+    PKT_GEN_CALLBACK_NULL,
   };
 
-  size_t blockLen = sizeof (blocks) / sizeof (pktGenCallback_t);
-
-  size_t optionsLen = sizeof (options) / sizeof (pktGenCallback_t);
-
-  pktGenOffer (discovery, offer, blocks, blockLen, options, optionsLen);
+  pktGenOffer (discovery, offer, blocks, options);
 
   /* Tests Fields */
   struct in_addr *serverIdentifier;

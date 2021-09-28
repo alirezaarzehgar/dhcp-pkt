@@ -22,8 +22,7 @@ static uint16_t currentBlock = -1;
 
 int
 pktGenOffer (pktDhcpPacket_t *discovery, pktDhcpPacket_t *offer,
-             pktGenCallback_t *blocks, size_t blocksLen, pktGenCallback_t *options,
-             size_t optionsLen)
+             pktGenCallback_t *blocks, pktGenCallback_t *options)
 {
   char *discoveryCookie;
 
@@ -40,7 +39,7 @@ pktGenOffer (pktDhcpPacket_t *discovery, pktDhcpPacket_t *offer,
 
   if (blocks)
     {
-      for (size_t i = 0; i < blocksLen; i++)
+      for (size_t i = 0; blocks[i].func != NULL && blocks[i].param != NULL; i++)
         blocks[i].func (offer, blocks[i].param);
     }
 
@@ -74,7 +73,7 @@ pktGenOffer (pktDhcpPacket_t *discovery, pktDhcpPacket_t *offer,
    */
   if (options)
     {
-      for (size_t i = 0; i < optionsLen; i++)
+      for (size_t i = 0; options[i].func != NULL && options[i].param != NULL; i++)
         options[i].func (opt, options[i].param);
     }
 
