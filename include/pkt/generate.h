@@ -19,7 +19,8 @@ typedef struct pktGenCallback pktGenCallback_t;
 int pktGenOffer (pktDhcpPacket_t *discovery, pktDhcpPacket_t *offer,
                  pktGenCallback_t *blocks, pktGenCallback_t *options);
 
-int pktGenAck (pktDhcpPacket_t *request, pktDhcpPacket_t *ack);
+int pktGenAck (pktDhcpPacket_t *request, pktDhcpPacket_t *ack,
+               pktGenCallback_t *blocks, pktGenCallback_t *options);
 
 int
 pktGenNak (void *unused /* TODO any parameter sets on future */,

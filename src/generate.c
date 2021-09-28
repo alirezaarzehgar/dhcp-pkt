@@ -20,6 +20,10 @@
  */
 static uint16_t currentBlock = -1;
 
+/**
+ * TODO pktGenOffer and Ack needs more test and bug fix
+ */
+
 int
 pktGenOffer (pktDhcpPacket_t *discovery, pktDhcpPacket_t *offer,
              pktGenCallback_t *blocks, pktGenCallback_t *options)
@@ -29,10 +33,7 @@ pktGenOffer (pktDhcpPacket_t *discovery, pktDhcpPacket_t *offer,
   if (!pktIsDiscoveryPktValidForOffer (discovery))
     return PKT_RET_FAILURE;
 
-  /**
-   * @brief Apply default offer fields
-   *
-   */
+  /* Apply default offer fields */
   pktGenFieldHardwareLen (offer, PKT_HLEN);
 
   pktGenFieldHardwareType (offer, PKT_HTYPE_ETHERNET);
@@ -43,20 +44,14 @@ pktGenOffer (pktDhcpPacket_t *discovery, pktDhcpPacket_t *offer,
         blocks[i].func (offer, blocks[i].param);
     }
 
-  /**
-   * @brief Apply necessary offer fileds
-   *
-   */
+  /* Apply necessary offer fileds */
   pktGenFieldOperationCode (offer, PKT_MESSAGE_TYPE_BOOT_REPLY);
 
   pktGenFieldClientMacAddress (offer, pktMacHex2str (discovery->chaddr));
 
   pktGenFieldTransactionId (offer, discovery->xid);
 
-  /**
-  * @brief Apply default offer options
-  *
-  */
+  /* Apply default offer options */
   pktGenOptInit();
 
   pktDhcpOptions_t *opt = (pktDhcpOptions_t *)&offer->options;
@@ -67,20 +62,12 @@ pktGenOffer (pktDhcpPacket_t *discovery, pktDhcpPacket_t *offer,
 
   pktGenOptDhcpMsgType (opt, DHCPOFFER);
 
-  /**
-   * @brief Iterate and run all option functions
-   *
-   */
+  /* Iterate and run all option functions */
   if (options)
     {
       for (size_t i = 0; options[i].func != NULL && options[i].param != NULL; i++)
         options[i].func (opt, options[i].param);
     }
-
-  /**
-  * @brief Apply necessary offer options
-  *
-  */
 
   pktGenOptEnd (opt);
 
@@ -88,19 +75,52 @@ pktGenOffer (pktDhcpPacket_t *discovery, pktDhcpPacket_t *offer,
 }
 
 int
-pktGenAck (pktDhcpPacket_t *request, pktDhcpPacket_t *ack)
+pktGenAck (pktDhcpPacket_t *request, pktDhcpPacket_t *ack,
+           pktGenCallback_t *blocks, pktGenCallback_t *options)
 {
-  /* Check discovery packet validation */
+  char *requestCookie;
 
-  /* TODO - Check discovery packet validation */
+  if (!pktIsRequestPktValidForAck (request))
+    return PKT_RET_FAILURE;
 
-  /* Fill common BOOTP and DHCP fileds */
+  /* Apply default offer fields */
+  pktGenFieldHardwareLen (request, PKT_HLEN);
 
-  /* TODO - Fill common BOOTP and DHCP fileds */
+  pktGenFieldHardwareType (request, PKT_HTYPE_ETHERNET);
 
-  /* Add all parameter requested list's options to offer */
+  if (blocks)
+    {
+      for (size_t i = 0; blocks[i].func != NULL && blocks[i].param != NULL; i++)
+        blocks[i].func (ack, blocks[i].param);
+    }
 
-  /* TODO - Add all parameter requested list's options to offer */
+  /* Apply necessary offer fileds */
+  pktGenFieldOperationCode (ack, PKT_MESSAGE_TYPE_BOOT_REPLY);
+
+  pktGenFieldClientMacAddress (ack, pktMacHex2str (request->chaddr));
+
+  pktGenFieldTransactionId (ack, request->xid);
+
+  /* Apply default offer options */
+  pktGenOptInit();
+
+  pktDhcpOptions_t *opt = (pktDhcpOptions_t *)&ack->options;
+
+  requestCookie = pktGetMagicCookie (request);
+
+  pktGenOptMagicCookie (opt, requestCookie);
+
+  pktGenOptDhcpMsgType (opt, DHCPOFFER);
+
+  /* Iterate and run all option functions */
+  if (options)
+    {
+      for (size_t i = 0; options[i].func != NULL && options[i].param != NULL; i++)
+        options[i].func (opt, options[i].param);
+    }
+
+
+  pktGenOptEnd (opt);
 
   return PKT_RET_SUCCESS;
 }
