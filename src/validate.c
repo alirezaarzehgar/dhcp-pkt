@@ -134,7 +134,7 @@ pktIsPktTypeBootReq (pktDhcpPacket_t *pkt)
 bool
 pktIsPktTypeBootRep (pktDhcpPacket_t *pkt)
 {
-  return pkt->op == PKT_MESSAGE_TYPE_BOOT_REPLY;
+  return pkt->op == PKT_MESSAGE_TYPE_BOOT_REPLAY;
 }
 
 bool

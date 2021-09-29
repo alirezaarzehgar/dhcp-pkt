@@ -57,7 +57,7 @@ struct pktDhcpPacket
 enum pktBootPMessageType
 {
   PKT_MESSAGE_TYPE_BOOT_REQUEST = 1,
-  PKT_MESSAGE_TYPE_BOOT_REPLY,
+  PKT_MESSAGE_TYPE_BOOT_REPLAY,
 };
 
 enum pktHardwareType
