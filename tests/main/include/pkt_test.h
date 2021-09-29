@@ -56,6 +56,7 @@ CU_TestInfo pkt_tests[] =
   {"convert mac address string to hex", pktMacStr2hexTest},
   {"convert mac address hex to string", pktMacHex2strTest},
   /* Generation Tests */
+  {"pktBlockManagerTest", pktBlockManagerTest},
   {"endpoint for packet generation", packetGenMainTest},
   {"generate Offer packet", pktGenOfferTest},
   {"generate Ack packet", pktGenAckTest},
