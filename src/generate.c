@@ -36,50 +36,63 @@ pktBlockManager()
   return ret;
 }
 
+void
+pktGenApplyNecessaryFields (pktDhcpPacket_t *pktRep,
+                            pktDhcpPacket_t *pktReq, int opcode)
+{
+  pktGenFieldHardwareLen (pktRep, PKT_HLEN);
+
+  pktGenFieldHardwareType (pktRep, PKT_HTYPE_ETHERNET);
+
+  pktGenFieldOperationCode (pktRep, opcode);
+
+  pktGenFieldClientMacAddress (pktRep, pktMacHex2str (pktReq->chaddr));
+
+  pktGenFieldTransactionId (pktRep, pktReq->xid);
+}
+
+void
+pktGenApplyNecessaryOptions (pktDhcpOptions_t *opt, pktDhcpPacket_t *pktReq,
+                             int msgType)
+{
+  char *pktRepCookie = pktGetMagicCookie (pktReq);
+
+  pktGenOptMagicCookie (opt, pktRepCookie);
+
+  pktGenOptDhcpMsgType (opt, msgType);
+}
+
+void
+pktGenIterateCallbacks (pktGenCallback_t *callbackList, void *containerDist)
+{
+  if (callbackList)
+    {
+      for (size_t i = 0; callbackList[i].func != NULL
+           && callbackList[i].param != NULL; i++)
+        callbackList[i].func (containerDist, callbackList[i].param);
+    }
+}
+
 int
 pktGenOffer (pktDhcpPacket_t *discovery, pktDhcpPacket_t *offer,
              pktGenCallback_t *blocks, pktGenCallback_t *options)
 {
-  char *discoveryCookie;
+  pktDhcpOptions_t *opt = (pktDhcpOptions_t *)&offer->options;
 
   if (!pktIsDiscoveryPktValidForOffer (discovery))
     return PKT_RET_FAILURE;
 
-  /* Apply default offer fields */
-  pktGenFieldHardwareLen (offer, PKT_HLEN);
+  pktGenApplyNecessaryFields (offer, discovery, PKT_MESSAGE_TYPE_BOOT_REPLY);
 
-  pktGenFieldHardwareType (offer, PKT_HTYPE_ETHERNET);
-
-  if (blocks)
-    {
-      for (size_t i = 0; blocks[i].func != NULL && blocks[i].param != NULL; i++)
-        blocks[i].func (offer, blocks[i].param);
-    }
-
-  /* Apply necessary offer fileds */
-  pktGenFieldOperationCode (offer, PKT_MESSAGE_TYPE_BOOT_REPLY);
-
-  pktGenFieldClientMacAddress (offer, pktMacHex2str (discovery->chaddr));
-
-  pktGenFieldTransactionId (offer, discovery->xid);
-
-  /* Apply default offer options */
-  pktDhcpOptions_t *opt = (pktDhcpOptions_t *)&offer->options;
+  /* Iterate all filed functions */
+  pktGenIterateCallbacks (blocks, offer);
 
   pktGenOptInit (opt);
 
-  discoveryCookie = pktGetMagicCookie (discovery);
-
-  pktGenOptMagicCookie (opt, discoveryCookie);
-
-  pktGenOptDhcpMsgType (opt, DHCPOFFER);
+  pktGenApplyNecessaryOptions (opt, discovery, DHCPOFFER);
 
   /* Iterate and run all option functions */
-  if (options)
-    {
-      for (size_t i = 0; options[i].func != NULL && options[i].param != NULL; i++)
-        options[i].func (opt, options[i].param);
-    }
+  pktGenIterateCallbacks (options, opt);
 
   pktGenOptEnd (opt);
 
@@ -90,46 +103,22 @@ int
 pktGenAck (pktDhcpPacket_t *request, pktDhcpPacket_t *ack,
            pktGenCallback_t *blocks, pktGenCallback_t *options)
 {
-  char *requestCookie;
+  pktDhcpOptions_t *opt = (pktDhcpOptions_t *)&ack->options;
 
   if (!pktIsRequestPktValidForAck (request))
     return PKT_RET_FAILURE;
 
-  /* Apply default offer fields */
-  pktGenFieldHardwareLen (ack, PKT_HLEN);
+  pktGenApplyNecessaryFields (ack, request, PKT_MESSAGE_TYPE_BOOT_REPLY);
 
-  pktGenFieldHardwareType (ack, PKT_HTYPE_ETHERNET);
-
-  if (blocks)
-    {
-      for (size_t i = 0; blocks[i].func != NULL && blocks[i].param != NULL; i++)
-        blocks[i].func (ack, blocks[i].param);
-    }
-
-  /* Apply necessary offer fileds */
-  pktGenFieldOperationCode (ack, PKT_MESSAGE_TYPE_BOOT_REPLY);
-
-  pktGenFieldClientMacAddress (ack, pktMacHex2str (request->chaddr));
-
-  pktGenFieldTransactionId (ack, request->xid);
-
-  /* Apply default offer options */
-  pktDhcpOptions_t *opt = (pktDhcpOptions_t *)&ack->options;
+  /* Iterate all filed functions */
+  pktGenIterateCallbacks (blocks, ack);
 
   pktGenOptInit (opt);
 
-  requestCookie = pktGetMagicCookie (request);
-
-  pktGenOptMagicCookie (opt, requestCookie);
-
-  pktGenOptDhcpMsgType (opt, DHCPACK);
+  pktGenApplyNecessaryOptions (opt, request, DHCPACK);
 
   /* Iterate and run all option functions */
-  if (options)
-    {
-      for (size_t i = 0; options[i].func != NULL && options[i].param != NULL; i++)
-        options[i].func (opt, options[i].param);
-    }
+  pktGenIterateCallbacks (options, opt);
 
   pktGenOptEnd (opt);
 
