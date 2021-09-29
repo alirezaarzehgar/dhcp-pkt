@@ -36,8 +36,8 @@ int pktGenAck (pktDhcpPacket_t *request, pktDhcpPacket_t *ack,
                pktGenCallback_t *blocks, pktGenCallback_t *options);
 
 int
-pktGenNak (void *unused /* TODO any parameter sets on future */,
-           pktDhcpPacket_t *nak);
+pktGenNak (pktDhcpPacket_t *pktReq, pktDhcpPacket_t *nak,
+           pktGenCallback_t *blocks, pktGenCallback_t *options);
 
 void pktGenOptInit (pktDhcpOptions_t *opt);
 
@@ -56,6 +56,8 @@ void pktGenOptSubnetMask (pktDhcpOptions_t *opt, char *netmask);
 void pktGenOptRouter (pktDhcpOptions_t *opt, char *routerAddr);
 
 void pktGenOptDomainName (pktDhcpOptions_t *opt, char *domainName);
+
+void pktGenOptMessage (pktDhcpOptions_t *opt, char *message);
 
 void pktGenFieldClientMacAddress (pktDhcpPacket_t *pkt, char *chaddr);
 

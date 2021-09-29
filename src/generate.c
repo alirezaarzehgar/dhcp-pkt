@@ -82,7 +82,7 @@ pktGenOffer (pktDhcpPacket_t *discovery, pktDhcpPacket_t *offer,
   if (!pktIsDiscoveryPktValidForOffer (discovery))
     return PKT_RET_FAILURE;
 
-  pktGenApplyNecessaryFields (offer, discovery, PKT_MESSAGE_TYPE_BOOT_REPLY);
+  pktGenApplyNecessaryFields (offer, discovery, PKT_MESSAGE_TYPE_BOOT_REPLAY);
 
   /* Iterate all filed functions */
   pktGenIterateCallbacks (blocks, offer);
@@ -108,7 +108,7 @@ pktGenAck (pktDhcpPacket_t *request, pktDhcpPacket_t *ack,
   if (!pktIsRequestPktValidForAck (request))
     return PKT_RET_FAILURE;
 
-  pktGenApplyNecessaryFields (ack, request, PKT_MESSAGE_TYPE_BOOT_REPLY);
+  pktGenApplyNecessaryFields (ack, request, PKT_MESSAGE_TYPE_BOOT_REPLAY);
 
   /* Iterate all filed functions */
   pktGenIterateCallbacks (blocks, ack);
@@ -126,16 +126,22 @@ pktGenAck (pktDhcpPacket_t *request, pktDhcpPacket_t *ack,
 }
 
 int
-pktGenNak (void *unused /* TODO any parameter sets on future */,
-           pktDhcpPacket_t *nak)
+pktGenNak (pktDhcpPacket_t *pktReq, pktDhcpPacket_t *nak,
+           pktGenCallback_t *blocks, pktGenCallback_t *options)
 {
-  /* get error message */
+  pktDhcpOptions_t *opt = (pktDhcpOptions_t *)&nak->options;
 
-  /* TODO - get error message */
+  pktGenApplyNecessaryFields (nak, pktReq, PKT_MESSAGE_TYPE_BOOT_REPLAY);
 
-  /* get extra option */
+  pktGenIterateCallbacks (blocks, nak);
 
-  /* TODO - get extra option */
+  pktGenOptInit (opt);
+
+  pktGenApplyNecessaryOptions (opt, pktReq, DHCPNAK);
+
+  pktGenIterateCallbacks (options, opt);
+
+  pktGenOptEnd (opt);
 
   return PKT_RET_SUCCESS;
 }
@@ -254,6 +260,12 @@ void
 pktGenOptDomainName (pktDhcpOptions_t *opt, char *domainName)
 {
   pktGenOptString (opt, domainName, OPTION_DOMAIN_NAME);
+}
+
+void
+pktGenOptMessage (pktDhcpOptions_t *opt, char *message)
+{
+  pktGenOptString (opt, message, OPTION_MSG);
 }
 
 void

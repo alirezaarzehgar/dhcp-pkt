@@ -60,6 +60,7 @@ CU_TestInfo pkt_tests[] =
   {"endpoint for packet generation", packetGenMainTest},
   {"generate Offer packet", pktGenOfferTest},
   {"generate Ack packet", pktGenAckTest},
+  {"pktGenNakTest", pktGenNakTest},
   CU_TEST_INFO_NULL,
 };
 

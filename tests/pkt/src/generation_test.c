@@ -67,7 +67,7 @@ packetGenMainTest()
 
   CU_ASSERT_FATAL (pktIsDiscoveryPktValidForOffer (discovery));
 
-  pktGenFieldOperationCode (offer, PKT_MESSAGE_TYPE_BOOT_REPLY);
+  pktGenFieldOperationCode (offer, PKT_MESSAGE_TYPE_BOOT_REPLAY);
 
   pktGenFieldHardwareType (offer, PKT_HTYPE_ETHERNET);
 
@@ -99,7 +99,7 @@ packetGenMainTest()
 
   pktGenOptEnd (offerOpt);
 
-  CU_ASSERT_EQUAL (offer->op, PKT_MESSAGE_TYPE_BOOT_REPLY);
+  CU_ASSERT_EQUAL (offer->op, PKT_MESSAGE_TYPE_BOOT_REPLAY);
 
   CU_ASSERT_EQUAL (offer->htype, PKT_HTYPE_ETHERNET);
 
@@ -169,7 +169,7 @@ pktGenOfferTest()
 
   char *cookie;
 
-  CU_ASSERT_EQUAL (offer->op, PKT_MESSAGE_TYPE_BOOT_REPLY);
+  CU_ASSERT_EQUAL (offer->op, PKT_MESSAGE_TYPE_BOOT_REPLAY);
 
   CU_ASSERT_EQUAL (offer->htype, PKT_HTYPE_ETHERNET);
 
@@ -225,7 +225,7 @@ pktGenAckTest()
   pktDhcpPacket_t *request = (pktDhcpPacket_t *)bufRequest;
 
   pktDhcpPacket_t *ack = (pktDhcpPacket_t *)calloc (sizeof (pktDhcpPacket_t),
-                           sizeof (pktDhcpPacket_t));
+                         sizeof (pktDhcpPacket_t));
 
   char *chaddr = pktMacStr2hex ("08:00:27:84:3e:d0");
 
@@ -258,7 +258,7 @@ pktGenAckTest()
 
   char *cookie;
 
-  CU_ASSERT_EQUAL (ack->op, PKT_MESSAGE_TYPE_BOOT_REPLY);
+  CU_ASSERT_EQUAL (ack->op, PKT_MESSAGE_TYPE_BOOT_REPLAY);
 
   CU_ASSERT_EQUAL (ack->htype, PKT_HTYPE_ETHERNET);
 
@@ -311,5 +311,48 @@ pktGenAckTest()
 void
 pktGenNakTest()
 {
-  /* TODO pktGenNakTest */
+  char *chaddr = pktMacStr2hex ("08:00:27:84:3e:d0");
+
+  struct in_addr *serverIdentifier;
+
+  char *cookie;
+
+  pktDhcpPacket_t *discovery = (pktDhcpPacket_t *)bufDiscovery;
+
+  pktDhcpPacket_t *nak = (pktDhcpPacket_t *)malloc (sizeof (pktDhcpPacket_t));
+
+  pktGenCallback_t options[] =
+  {
+    { .func = (pktGenCallbackFunc_t)pktGenOptDhcpServerIdentofier, .param = "192.168.100.1" },
+    { .func = (pktGenCallbackFunc_t)pktGenOptMessage, .param = "Wrong server-ID" },
+    PKT_GEN_CALLBACK_NULL,
+  };
+
+  pktGenNak (discovery, nak, NULL, options);
+
+  CU_ASSERT_EQUAL (nak->op, PKT_MESSAGE_TYPE_BOOT_REPLAY);
+
+  CU_ASSERT_EQUAL (nak->htype, PKT_HTYPE_ETHERNET);
+
+  CU_ASSERT_STRING_EQUAL (pktMacHex2str (nak->chaddr), pktMacHex2str (chaddr));
+
+  CU_ASSERT_EQUAL (nak->hlen, 6);
+
+  CU_ASSERT_EQUAL (nak->xid, discovery->xid);
+
+  CU_ASSERT_EQUAL (pktGetDhcpMessageType (nak), DHCPNAK);
+
+  cookie = pktGetMagicCookie (nak);
+
+  CU_ASSERT_TRUE (cookie != NULL);
+
+  CU_ASSERT_STRING_EQUAL (cookie, pktGetMagicCookie (discovery));
+
+  serverIdentifier = pktGetServerIdentifier (nak);
+
+  CU_ASSERT_FATAL (serverIdentifier != NULL);
+
+  CU_ASSERT_STRING_EQUAL (inet_ntoa (*serverIdentifier),
+                          "192.168.100.1");
+  free (nak);
 }
