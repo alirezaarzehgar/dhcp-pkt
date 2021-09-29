@@ -3,6 +3,8 @@
 
 #include "analyze_test.h"
 
+void pktBlockManagerTest();
+
 void packetGenMainTest();
 
 void pktGenOfferTest();

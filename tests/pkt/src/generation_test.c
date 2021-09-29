@@ -24,6 +24,23 @@ extern char bufRequest[DHCP_PACKET_MAX_LEN];
 extern char bufNak[DHCP_PACKET_MAX_LEN];
 
 void
+pktBlockManagerTest()
+{
+  pktBlockManager().clear();
+
+  int count = -50;
+
+  for (size_t i = -50; i < 50; i += rand() % 10)
+    {
+      count += i;
+
+      pktBlockManager().increase (i);
+
+      CU_ASSERT_EQUAL (count, pktBlockManager().block);
+    }
+}
+
+void
 packetGenMainTest()
 {
   /* Test endpoint for many test regardless specific function */
@@ -44,6 +61,8 @@ packetGenMainTest()
 
   char *cookie = pktGetMagicCookie (discovery);
 
+  char *domain;
+
   CU_ASSERT_FATAL (strlen (cookie) == DHCP_MAGIC_COOKIE_SIZE);
 
   CU_ASSERT_FATAL (pktIsDiscoveryPktValidForOffer (discovery));
@@ -62,7 +81,7 @@ packetGenMainTest()
 
   /* opts */
 
-  pktGenOptInit();
+  pktGenOptInit (offerOpt);
 
   pktGenOptMagicCookie (offerOpt, cookie);
 
@@ -104,7 +123,11 @@ packetGenMainTest()
 
   CU_ASSERT_STRING_EQUAL (inet_ntoa (*pktGetRouter (offer)), "192.168.100.1");
 
-  CU_ASSERT_STRING_EQUAL (pktGetDomainName (offer), "example.org");
+  domain = pktGetDomainName (offer);
+
+  CU_ASSERT_FATAL (domain != NULL);
+
+  CU_ASSERT_STRING_EQUAL (domain, "example.org");
 }
 
 void
@@ -125,11 +148,11 @@ pktGenOfferTest()
 
   pktGenCallback_t options[] =
   {
-    {.func = (pktGenCallbackFunc_t)pktGenOptDhcpServerIdentofier, .param = "192.168.133.30"},
-    {.func = (pktGenCallbackFunc_t)pktGenOptIpAddrLeaseTime, .param = (void *)600},
-    {.func = (pktGenCallbackFunc_t)pktGenOptSubnetMask, .param = "255.255.255.0"},
     {.func = (pktGenCallbackFunc_t)pktGenOptRouter, .param = "192.168.1.1"},
+    {.func = (pktGenCallbackFunc_t)pktGenOptDhcpServerIdentofier, .param = "192.168.133.30"},
     {.func = (pktGenCallbackFunc_t)pktGenOptDomainName, .param = "example.org"},
+    {.func = (pktGenCallbackFunc_t)pktGenOptSubnetMask, .param = "255.255.255.0"},
+    {.func = (pktGenCallbackFunc_t)pktGenOptIpAddrLeaseTime, .param = (void *)600},
     PKT_GEN_CALLBACK_NULL,
   };
 

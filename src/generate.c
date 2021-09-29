@@ -11,18 +11,30 @@
 
 #include "pkt/generate.h"
 
-/**
- * @brief In pktGenOpt function we should know current block
- * for avoiding overwriting on writed blocks.
- * We wanna add options block by block without duplication.
- *
- * -1 means to uninitialized.
- */
-static uint16_t currentBlock = -1;
+pktBlockManagerRetVal_t
+pktBlockManager()
+{
+  static int block;
 
-/**
- * TODO pktGenOffer and Ack needs more test and bug fix
- */
+  void __pkt_close()
+  {
+    block = -1;
+  }
+
+  void __pkt_clear()
+  {
+    block = 0;
+  }
+
+  void __pkt_increase (int size)
+  {
+    block += size;
+  }
+
+  pktBlockManagerRetVal_t ret = { __pkt_clear, __pkt_close, __pkt_increase, block };
+
+  return ret;
+}
 
 int
 pktGenOffer (pktDhcpPacket_t *discovery, pktDhcpPacket_t *offer,
@@ -52,9 +64,9 @@ pktGenOffer (pktDhcpPacket_t *discovery, pktDhcpPacket_t *offer,
   pktGenFieldTransactionId (offer, discovery->xid);
 
   /* Apply default offer options */
-  pktGenOptInit();
-
   pktDhcpOptions_t *opt = (pktDhcpOptions_t *)&offer->options;
+
+  pktGenOptInit (opt);
 
   discoveryCookie = pktGetMagicCookie (discovery);
 
@@ -102,9 +114,9 @@ pktGenAck (pktDhcpPacket_t *request, pktDhcpPacket_t *ack,
   pktGenFieldTransactionId (ack, request->xid);
 
   /* Apply default offer options */
-  pktGenOptInit();
-
   pktDhcpOptions_t *opt = (pktDhcpOptions_t *)&ack->options;
+
+  pktGenOptInit (opt);
 
   requestCookie = pktGetMagicCookie (request);
 
@@ -141,17 +153,21 @@ pktGenNak (void *unused /* TODO any parameter sets on future */,
 }
 
 void
-pktGenOptInit()
+pktGenOptInit (pktDhcpOptions_t *opt)
 {
-  currentBlock = 0;
+  bzero (opt, DHCP_MAX_OPTION_LEN);
+
+  pktBlockManager().clear();
 }
 
 void
 pktGenOptMagicCookie (pktDhcpOptions_t *opt, char *cookie)
 {
-  memcpy (&opt->opts[currentBlock], cookie, strlen (cookie));
+  int cookieLen = strlen (cookie);
 
-  currentBlock += strlen (cookie);
+  memcpy (&opt->opts[pktBlockManager().block], cookie, cookieLen);
+
+  pktBlockManager().increase (cookieLen);
 }
 
 void
@@ -159,26 +175,33 @@ pktGenOptDhcpMsgType (pktDhcpOptions_t *opt, int type)
 {
   pktMessageType_t msgType = {.len = 1, .option = OPTION_DHCP_MSG_TYPE & 0xff, .type = type};
 
-  memcpy (&opt->opts[currentBlock], &msgType, sizeof (pktMessageType_t));
+  int size = sizeof (pktMessageType_t);
 
-  currentBlock += sizeof (pktMessageType_t);
+  memcpy (&opt->opts[pktBlockManager().block], &msgType, size);
+
+  pktBlockManager().increase (size);
 }
 
 void
 pktGenOptAddr (pktDhcpOptions_t *opt, char *addr, int option, size_t len)
 {
-  pktAddress_t address = {.option = option & 0xff, .len = len};
+  pktAddress_t *address = (pktAddress_t *)malloc (sizeof (pktAddress_t));
 
-  size_t size = sizeof (pktAddress_t) + address.len;
+  address->option = option & 0xff;
+
+  address->len = len;
+
+  size_t size = sizeof (pktAddress_t) + address->len;
 
   char *hexAddr = pktIpStr2hex (addr);
 
-  if (hexAddr)
-    memcpy (address.addr, hexAddr, address.len);
+  memcpy (address->addr, hexAddr, 4);
 
-  memcpy (&opt->opts[currentBlock], &address, size);
+  memcpy (&opt->opts[pktBlockManager().block], address, size);
 
-  currentBlock += size;
+  pktBlockManager().increase (size);
+
+  free (address);
 }
 
 void
@@ -192,6 +215,8 @@ pktGenOptIpAddrLeaseTime (pktDhcpOptions_t *opt, uint32_t time)
 {
   char *hexTime;
 
+  int size = sizeof (pktIpAddressLeaseTime_t);
+
   pktIpAddressLeaseTime_t ipAddrLT = {.option = OPTION_IP_ADDR_LEASE_TIME & 0xff, .len = PKT_IP_ADDR_LEASE_TIME_LEN};
 
   hexTime = pktLeaseTimeLong2hex (time);
@@ -199,9 +224,9 @@ pktGenOptIpAddrLeaseTime (pktDhcpOptions_t *opt, uint32_t time)
   if (time)
     memcpy (ipAddrLT.time, hexTime, ipAddrLT.len);
 
-  memcpy (&opt->opts[currentBlock], &ipAddrLT, sizeof (pktIpAddressLeaseTime_t));
+  memcpy (&opt->opts[pktBlockManager().block], &ipAddrLT, size);
 
-  currentBlock += sizeof (pktIpAddressLeaseTime_t);
+  pktBlockManager().increase (size);
 }
 
 void
@@ -219,18 +244,22 @@ pktGenOptRouter (pktDhcpOptions_t *opt, char *router)
 void
 pktGenOptString (pktDhcpOptions_t *opt, char *string, int option)
 {
-  pktString_t str = {.option = option & 0xff, .len = strlen (string)};
+  pktString_t *str = (pktString_t *)malloc (sizeof (pktString_t));
 
-  size_t size = sizeof (pktDomainName_t) + str.len;
+  str->option = option & 0xff;
+
+  str->len = strlen (string);
 
   char *name = string;
 
+  int size = sizeof (pktString_t) + str->len;
+
   if (name)
-    memcpy (str.name, name, str.len);
+    memcpy (str->name, name, str->len);
 
-  memcpy (&opt->opts[currentBlock], &str, sizeof (pktString_t) + str.len);
+  memcpy (&opt->opts[pktBlockManager().block], str, size);
 
-  currentBlock += size;
+  pktBlockManager().increase (size);
 }
 
 void
@@ -244,9 +273,9 @@ pktGenOptEnd (pktDhcpOptions_t *opt)
 {
   pktEnd_t end = {.option = OPTION_END};
 
-  memcpy (&opt->opts[currentBlock], &end, sizeof (pktEnd_t));
+  memcpy (&opt->opts[pktBlockManager().block], &end, sizeof (pktEnd_t));
 
-  currentBlock = -1;
+  pktBlockManager().close();
 }
 
 void

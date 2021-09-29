@@ -14,6 +14,19 @@ struct pktGenCallback
   void *param;
 };
 
+typedef struct pktBlockManagerRetVal
+{
+  void (*clear)();
+
+  void (*close)();
+
+  void (*increase) (int size);
+
+  int block;
+} pktBlockManagerRetVal_t;
+
+pktBlockManagerRetVal_t pktBlockManager();
+
 typedef struct pktGenCallback pktGenCallback_t;
 
 int pktGenOffer (pktDhcpPacket_t *discovery, pktDhcpPacket_t *offer,
@@ -26,7 +39,7 @@ int
 pktGenNak (void *unused /* TODO any parameter sets on future */,
            pktDhcpPacket_t *nak);
 
-void pktGenOptInit();
+void pktGenOptInit (pktDhcpOptions_t *opt);
 
 void pktGenOptEnd (pktDhcpOptions_t *opt);
 
