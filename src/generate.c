@@ -96,9 +96,9 @@ pktGenAck (pktDhcpPacket_t *request, pktDhcpPacket_t *ack,
     return PKT_RET_FAILURE;
 
   /* Apply default offer fields */
-  pktGenFieldHardwareLen (request, PKT_HLEN);
+  pktGenFieldHardwareLen (ack, PKT_HLEN);
 
-  pktGenFieldHardwareType (request, PKT_HTYPE_ETHERNET);
+  pktGenFieldHardwareType (ack, PKT_HTYPE_ETHERNET);
 
   if (blocks)
     {
@@ -122,7 +122,7 @@ pktGenAck (pktDhcpPacket_t *request, pktDhcpPacket_t *ack,
 
   pktGenOptMagicCookie (opt, requestCookie);
 
-  pktGenOptDhcpMsgType (opt, DHCPOFFER);
+  pktGenOptDhcpMsgType (opt, DHCPACK);
 
   /* Iterate and run all option functions */
   if (options)
@@ -130,7 +130,6 @@ pktGenAck (pktDhcpPacket_t *request, pktDhcpPacket_t *ack,
       for (size_t i = 0; options[i].func != NULL && options[i].param != NULL; i++)
         options[i].func (opt, options[i].param);
     }
-
 
   pktGenOptEnd (opt);
 

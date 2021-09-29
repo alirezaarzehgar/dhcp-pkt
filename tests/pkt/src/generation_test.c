@@ -222,7 +222,90 @@ pktGenOfferTest()
 void
 pktGenAckTest()
 {
-  /* TODO pktGenAckTest */
+  pktDhcpPacket_t *request = (pktDhcpPacket_t *)bufRequest;
+
+  pktDhcpPacket_t *ack = (pktDhcpPacket_t *)calloc (sizeof (pktDhcpPacket_t),
+                           sizeof (pktDhcpPacket_t));
+
+  char *chaddr = pktMacStr2hex ("08:00:27:84:3e:d0");
+
+  pktGenCallback_t blocks[] =
+  {
+    {.func = (pktGenCallbackFunc_t)pktGenFieldYourIpAddress, .param = "192.168.133.144"},
+    PKT_GEN_CALLBACK_NULL,
+  };
+
+  pktGenCallback_t options[] =
+  {
+    {.func = (pktGenCallbackFunc_t)pktGenOptSubnetMask, .param = "255.255.255.0"},
+    {.func = (pktGenCallbackFunc_t)pktGenOptRouter, .param = "192.168.1.1"},
+    {.func = (pktGenCallbackFunc_t)pktGenOptIpAddrLeaseTime, .param = (void *)600},
+    {.func = (pktGenCallbackFunc_t)pktGenOptDhcpServerIdentofier, .param = "192.168.133.30"},
+    {.func = (pktGenCallbackFunc_t)pktGenOptDomainName, .param = "example.org"},
+    PKT_GEN_CALLBACK_NULL,
+  };
+
+  pktGenAck (request, ack, blocks, options);
+
+  /* Tests Fields */
+  struct in_addr *serverIdentifier;
+
+  struct in_addr *mask;
+
+  struct in_addr *router;
+
+  char *domain;
+
+  char *cookie;
+
+  CU_ASSERT_EQUAL (ack->op, PKT_MESSAGE_TYPE_BOOT_REPLY);
+
+  CU_ASSERT_EQUAL (ack->htype, PKT_HTYPE_ETHERNET);
+
+  CU_ASSERT_STRING_EQUAL (pktMacHex2str (ack->chaddr), pktMacHex2str (chaddr));
+
+  CU_ASSERT_EQUAL (ack->hlen, 6);
+
+  CU_ASSERT_EQUAL (ack->xid, request->xid);
+
+  CU_ASSERT_EQUAL (ack->yiaddr.s_addr, inet_addr ("192.168.133.144"));
+
+  /* Test Options */
+  CU_ASSERT_EQUAL (pktGetDhcpMessageType (ack), DHCPACK);
+
+  cookie = pktGetMagicCookie (ack);
+
+  CU_ASSERT_TRUE (cookie != NULL);
+
+  CU_ASSERT_STRING_EQUAL (cookie, pktGetMagicCookie (request));
+
+  serverIdentifier = pktGetServerIdentifier (ack);
+
+  CU_ASSERT_FATAL (serverIdentifier != NULL);
+
+  CU_ASSERT_STRING_EQUAL (inet_ntoa (*serverIdentifier),
+                          "192.168.133.30");
+
+  CU_ASSERT_EQUAL (pktLeaseTimeHex2long (pktGetIpAddressLeaseTime (ack)), 600);
+
+  mask = pktGetSubnetMask (ack);
+
+  CU_ASSERT_FATAL (mask != NULL);
+
+  CU_ASSERT_STRING_EQUAL (inet_ntoa (*mask),
+                          "255.255.255.0");
+
+  router = pktGetRouter (ack);
+
+  CU_ASSERT_FATAL (router != NULL);
+
+  CU_ASSERT_STRING_EQUAL (inet_ntoa (*router), "192.168.1.1");
+
+  domain = pktGetDomainName (ack);
+
+  CU_ASSERT_FATAL (domain != NULL);
+
+  CU_ASSERT_STRING_EQUAL (domain, "example.org");
 }
 
 void
