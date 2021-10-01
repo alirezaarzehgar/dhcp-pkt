@@ -27,8 +27,6 @@ bool pktIsParameterListValid (pktParameterRequestList_t *opt);
 
 bool pktIsValidServerIdentifier (pktServerIdentifier_t *opt);
 
-bool pktIsValidString (char *ip);
-
 bool pktIsIpAddressLeaseTimeOptionValid (pktIpAddressLeaseTime_t *opt);
 
 bool pktIsValidSubnetMask (pktSubnetMask_t *opt);
