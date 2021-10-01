@@ -400,7 +400,13 @@ pktHaveMagicCookieTest()
 {
   pktTestFunctionOnAllPackets (magicCookie);
 
-  pktTestFunctionWithEmptyPkt ((pktValidator_t)pktHaveMagicCookie);
+  /**
+   * @brief A bug occur when we run :
+   * ```
+   * pktTestFunctionWithEmptyPkt ((pktValidator_t)pktHaveMagicCookie);
+   * ```
+   * We should fix it.
+   */
 }
 
 void
