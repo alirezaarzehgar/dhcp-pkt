@@ -87,7 +87,7 @@ packetGenMainTest()
 
   pktGenOptDhcpMsgType (offerOpt, DHCPOFFER);
 
-  pktGenOptDhcpServerIdentofier (offerOpt, "192.168.133.30");
+  pktGenOptDhcpServerIdentifier (offerOpt, "192.168.133.30");
 
   pktGenOptIpAddrLeaseTime (offerOpt, 600);
 
@@ -149,7 +149,7 @@ pktGenOfferTest()
   pktGenCallback_t options[] =
   {
     {.func = (pktGenCallbackFunc_t)pktGenOptRouter, .param = "192.168.1.1"},
-    {.func = (pktGenCallbackFunc_t)pktGenOptDhcpServerIdentofier, .param = "192.168.133.30"},
+    {.func = (pktGenCallbackFunc_t)pktGenOptDhcpServerIdentifier, .param = "192.168.133.30"},
     {.func = (pktGenCallbackFunc_t)pktGenOptDomainName, .param = "example.org"},
     {.func = (pktGenCallbackFunc_t)pktGenOptSubnetMask, .param = "255.255.255.0"},
     {.func = (pktGenCallbackFunc_t)pktGenOptIpAddrLeaseTime, .param = (void *)600},
@@ -240,7 +240,7 @@ pktGenAckTest()
     {.func = (pktGenCallbackFunc_t)pktGenOptSubnetMask, .param = "255.255.255.0"},
     {.func = (pktGenCallbackFunc_t)pktGenOptRouter, .param = "192.168.1.1"},
     {.func = (pktGenCallbackFunc_t)pktGenOptIpAddrLeaseTime, .param = (void *)600},
-    {.func = (pktGenCallbackFunc_t)pktGenOptDhcpServerIdentofier, .param = "192.168.133.30"},
+    {.func = (pktGenCallbackFunc_t)pktGenOptDhcpServerIdentifier, .param = "192.168.133.30"},
     {.func = (pktGenCallbackFunc_t)pktGenOptDomainName, .param = "example.org"},
     PKT_GEN_CALLBACK_NULL,
   };
@@ -323,7 +323,7 @@ pktGenNakTest()
 
   pktGenCallback_t options[] =
   {
-    { .func = (pktGenCallbackFunc_t)pktGenOptDhcpServerIdentofier, .param = "192.168.100.1" },
+    { .func = (pktGenCallbackFunc_t)pktGenOptDhcpServerIdentifier, .param = "192.168.100.1" },
     { .func = (pktGenCallbackFunc_t)pktGenOptMessage, .param = "Wrong server-ID" },
     PKT_GEN_CALLBACK_NULL,
   };

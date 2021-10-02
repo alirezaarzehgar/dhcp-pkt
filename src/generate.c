@@ -199,7 +199,7 @@ pktGenOptAddr (pktDhcpOptions_t *opt, char *addr, int option, size_t len)
 }
 
 void
-pktGenOptDhcpServerIdentofier (pktDhcpOptions_t *opt, char *server)
+pktGenOptDhcpServerIdentifier (pktDhcpOptions_t *opt, char *server)
 {
   pktGenOptAddr (opt, server, OPTION_SERVER_IDENTIFIER, PKT_DEFAULT_ADDRESS_LEN);
 }

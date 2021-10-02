@@ -49,7 +49,7 @@ void pktGenOptIpAddrLeaseTime (pktDhcpOptions_t *opt, uint32_t time);
 
 void pktGenOptDhcpMsgType (pktDhcpOptions_t *opt, int type);
 
-void pktGenOptDhcpServerIdentofier (pktDhcpOptions_t *opt, char *server);
+void pktGenOptDhcpServerIdentifier (pktDhcpOptions_t *opt, char *server);
 
 void pktGenOptSubnetMask (pktDhcpOptions_t *opt, char *netmask);
 
