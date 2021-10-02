@@ -409,7 +409,7 @@ pktHaveMagicCookieTest()
    *
    * TODO wrong behavior on multiply target OS
    * When I uncomment this line of code on manjaro I have 5 failed tests.
-   * But when I run this code on `debian 5.10.0-8-amd64` its works perfectly without any errors.
+   * But when I run this code on `debian 5.10.0-8-amd64` it works perfectly without any errors.
    */
 }
 
