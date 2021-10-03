@@ -159,9 +159,7 @@ pktGenOptMagicCookie (pktDhcpOptions_t *opt, char *cookie)
 {
   int cookieLen = strlen (cookie);
 
-  memcpy (&opt->opts[pktBlockManager().block], cookie, cookieLen);
-
-  pktBlockManager().increase (cookieLen);
+  memcpy (opt->cookie, cookie, cookieLen);
 }
 
 void
