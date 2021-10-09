@@ -164,17 +164,19 @@ pktIsValidMacAddress (pktDhcpPacket_t *pkt)
 }
 
 bool
+pktIsValidMagicCookie (char *cookie)
+{
+  const char standardCookie[] = {99, 130, 83, 99, 0};
+
+  return memcmp (cookie, standardCookie, DHCP_MAGIC_COOKIE_SIZE) == 0;
+}
+
+bool
 pktHaveMagicCookie (pktDhcpPacket_t *pkt)
 {
-  char *cookie = pktGetMagicCookie (pkt);
+  pktDhcpOptions_t *opt = (pktDhcpOptions_t *)pkt->options;
 
-  if (strlen (cookie) == DHCP_MAGIC_COOKIE_SIZE)
-    {
-      free (cookie);
-      return true;
-    }
-
-  return false;
+  return pktIsValidMagicCookie (opt->cookie);
 }
 
 bool

@@ -53,6 +53,8 @@ bool pktHaveTransactionId (pktDhcpPacket_t *pkt);
 
 bool pktIsValidMacAddress (pktDhcpPacket_t *pkt);
 
+bool pktIsValidMagicCookie (char *cookie);
+
 bool pktHaveMagicCookie (pktDhcpPacket_t *pkt);
 
 bool pktIsMsgTypeDiscovery (pktDhcpPacket_t *pkt);
