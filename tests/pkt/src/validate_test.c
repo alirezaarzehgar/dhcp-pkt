@@ -451,7 +451,7 @@ pktIsMsgTypeRequestTest()
 void
 haveHostName (pktDhcpPacket_t *pkt, int index)
 {
-  if (index % 2 == 0)
+  if (index % 2 == 0 && index > 4)
     CU_ASSERT (pktHaveHostNameOption (pkt));
 }
 
