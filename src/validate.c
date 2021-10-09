@@ -168,15 +168,15 @@ pktIsValidMagicCookie (char *cookie)
 {
   const char standardCookie[] = {99, 130, 83, 99, 0};
 
-  return memcmp (cookie, standardCookie, DHCP_MAGIC_COOKIE_SIZE) == 0;
+  return memcmp (cookie, standardCookie, DHCP_MAGIC_COOKIE_SIZE ) == 0;
 }
 
 bool
 pktHaveMagicCookie (pktDhcpPacket_t *pkt)
 {
-  pktDhcpOptions_t *opt = (pktDhcpOptions_t *)pkt->options;
+  pktDhcpOptions_t *opt = (pktDhcpOptions_t*)pkt->options;
 
-  return pktIsValidMagicCookie (opt->cookie);
+  return pktIsValidMagicCookie(opt.);
 }
 
 bool
@@ -246,7 +246,6 @@ pktIsDiscoveryPktValidForOffer (pktDhcpPacket_t *pkt)
     pktHaveTransactionId,
     pktHaveMagicCookie,
     pktIsMsgTypeDiscovery,
-    pktHaveHostNameOption,
     pktHaveParameterRequestListOption,
   };
 
