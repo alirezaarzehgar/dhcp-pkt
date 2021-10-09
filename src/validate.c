@@ -176,7 +176,7 @@ pktHaveMagicCookie (pktDhcpPacket_t *pkt)
 {
   pktDhcpOptions_t *opt = (pktDhcpOptions_t*)pkt->options;
 
-  return pktIsValidMagicCookie(opt.);
+  return pktIsValidMagicCookie(opt->cookie);
 }
 
 bool
