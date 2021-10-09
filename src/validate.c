@@ -264,7 +264,6 @@ pktIsRequestPktValidForAck (pktDhcpPacket_t *pkt)
     pktHaveTransactionId,
     pktHaveMagicCookie,
     pktIsMsgTypeRequest,
-    pktHaveHostNameOption,
     pktHaveParameterRequestListOption,
   };
 
