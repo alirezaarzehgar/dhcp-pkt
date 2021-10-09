@@ -201,7 +201,7 @@ host_name (pktDhcpPacket_t *pkt, int index)
 {
   char *host = pktGetHostName (pkt);
 
-  if (index % 2 == 0)
+  if (index % 2 == 0 && index < 4)
     {
       /* only for DISCOVERY & REQUEST */
       CU_ASSERT_STRING_EQUAL (host, "dhcp-client1");
@@ -231,7 +231,8 @@ parameter_list (pktDhcpPacket_t *pkt, int index)
   if (index % 2 == 0)
     {
       /* only for DISCOVERY & REQUEST */
-      CU_ASSERT_EQUAL (list->len, 13);
+      /* index = 4 is minimalDiscovery */
+      CU_ASSERT_EQUAL (list->len, index == 4 ? 7 : 13);
 
       CU_ASSERT_EQUAL (list->len, strlen (list->list));
 
