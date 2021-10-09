@@ -261,7 +261,7 @@ server_identifier (pktDhcpPacket_t *pkt, int index)
 
   struct in_addr *addr = pktGetServerIdentifier (pkt);
 
-  if (index > 0)
+  if (index > 0 && index < 4)
     {
       CU_ASSERT_FATAL (addr != NULL);
 
