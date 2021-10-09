@@ -154,7 +154,7 @@ requested_ip_address (pktDhcpPacket_t *pkt, int index)
     "192.168.133.114"
   };
 
-  if (index % 2 == 1)
+  if (index % 2 == 1 || index >= 4)
     {
       /* only for OFFER & NAK */
       CU_ASSERT (addr == NULL);
@@ -162,7 +162,7 @@ requested_ip_address (pktDhcpPacket_t *pkt, int index)
   else
     CU_ASSERT_FATAL (addr != NULL);
 
-  if (index % 2 == 0)
+  if (index % 2 == 0 && index < 4)
     {
       /* only for DISCOVERY & REQUEST */
       CU_ASSERT_STRING_EQUAL (inet_ntoa (*addr), ips[index / 2]);
