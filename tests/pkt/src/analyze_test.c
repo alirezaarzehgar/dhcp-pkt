@@ -21,6 +21,8 @@ const char *pathRequest = "fake_data/request";
 
 const char *pathAll = "fake_data/all";
 
+const char *pathMinimalDiscovery = "fake_data/minimallest-discovery";
+
 char bufAll[DHCP_PACKET_MAX_LEN];
 
 char bufDiscovery[DHCP_PACKET_MAX_LEN];
@@ -30,6 +32,8 @@ char bufOffer[DHCP_PACKET_MAX_LEN];
 char bufRequest[DHCP_PACKET_MAX_LEN];
 
 char bufNak[DHCP_PACKET_MAX_LEN];
+
+char bufMinimalDiscovery[DHCP_PACKET_MAX_LEN];
 
 int
 initSuitePkt()
@@ -54,6 +58,10 @@ initSuitePkt()
 
   PKT_FAILED_OPEN_FILE (fdNak, pathNak);
 
+  int fdMinimalDiscovery = open (pathMinimalDiscovery, O_RDONLY);
+
+  PKT_FAILED_OPEN_FILE (fdMinimalDiscovery, pathMinimalDiscovery);
+
   read (fdAll, bufAll, DHCP_PACKET_MAX_LEN);
 
   read (fdDiscovery, bufDiscovery, DHCP_PACKET_MAX_LEN);
@@ -64,6 +72,8 @@ initSuitePkt()
 
   read (fdNak, bufNak, DHCP_PACKET_MAX_LEN);
 
+  read (fdMinimalDiscovery, bufMinimalDiscovery, DHCP_PACKET_MAX_LEN);
+
   close (fdAll);
 
   close (fdDiscovery);
@@ -73,6 +83,8 @@ initSuitePkt()
   close (fdRequest);
 
   close (fdNak);
+
+  close (fdMinimalDiscovery);
 
   return 0;
 }
@@ -92,7 +104,8 @@ pktTestFunctionOnAllPackets (pktCustomTest_t func)
     (pktDhcpPacket_t *)bufOffer,
     (pktDhcpPacket_t *)bufRequest,
     (pktDhcpPacket_t *)bufNak,
-  };
+    (pktDhcpPacket_t *)bufMinimalDiscovery,
+  }; 
 
   for (size_t i = 0; i < sizeof (pkts) / sizeof (pktDhcpPacket_t *); i++)
     func (pkts[i], i);
@@ -141,7 +154,7 @@ requested_ip_address (pktDhcpPacket_t *pkt, int index)
     "192.168.133.114"
   };
 
-  if (index % 2 == 1)
+  if (index % 2 == 1 || index >= 4)
     {
       /* only for OFFER & NAK */
       CU_ASSERT (addr == NULL);
@@ -149,7 +162,7 @@ requested_ip_address (pktDhcpPacket_t *pkt, int index)
   else
     CU_ASSERT_FATAL (addr != NULL);
 
-  if (index % 2 == 0)
+  if (index % 2 == 0 && index < 4)
     {
       /* only for DISCOVERY & REQUEST */
       CU_ASSERT_STRING_EQUAL (inet_ntoa (*addr), ips[index / 2]);
@@ -170,7 +183,8 @@ message_type (pktDhcpPacket_t *pkt, int index)
     DHCPDISCOVER,
     DHCPOFFER,
     DHCPREQUEST,
-    DHCPNAK
+    DHCPNAK,
+    DHCPDISCOVER,
   };
 
   CU_ASSERT_EQUAL (pktGetDhcpMessageType (pkt), types[index]);
@@ -187,7 +201,7 @@ host_name (pktDhcpPacket_t *pkt, int index)
 {
   char *host = pktGetHostName (pkt);
 
-  if (index % 2 == 0)
+  if (index % 2 == 0 && index < 4)
     {
       /* only for DISCOVERY & REQUEST */
       CU_ASSERT_STRING_EQUAL (host, "dhcp-client1");
@@ -217,7 +231,8 @@ parameter_list (pktDhcpPacket_t *pkt, int index)
   if (index % 2 == 0)
     {
       /* only for DISCOVERY & REQUEST */
-      CU_ASSERT_EQUAL (list->len, 13);
+      /* index = 4 is minimalDiscovery */
+      CU_ASSERT_EQUAL (list->len, index == 4 ? 7 : 13);
 
       CU_ASSERT_EQUAL (list->len, strlen (list->list));
 
@@ -246,7 +261,7 @@ server_identifier (pktDhcpPacket_t *pkt, int index)
 
   struct in_addr *addr = pktGetServerIdentifier (pkt);
 
-  if (index > 0)
+  if (index > 0 && index < 4)
     {
       CU_ASSERT_FATAL (addr != NULL);
 

@@ -16,23 +16,13 @@ pktGetMagicCookie (pktDhcpPacket_t *pkt)
 {
   pktDhcpOptions_t *opt = (pktDhcpOptions_t *)pkt->options;
 
-  /* +1 for nul */
   char *cookie = (char *)malloc (sizeof (char) *
-                                 DHCP_MAGIC_COOKIE_SIZE + 1);
-
+                                 DHCP_MAGIC_COOKIE_SIZE);
   if (!cookie)
     return NULL;
 
-  for (size_t i = 0; i < DHCP_MIN_OPTION_LEN; i++)
-    {
-      if (opt->cookie[i] != 0)
-        {
-          memcpy (cookie, &opt->cookie[i], DHCP_MAGIC_COOKIE_SIZE);
-          break;
-        }
-    }
-
-  cookie[DHCP_MAGIC_COOKIE_SIZE] = '\0';
+  if (pktIsValidMagicCookie (opt->cookie))
+    memcpy (cookie, opt->cookie, DHCP_MAGIC_COOKIE_SIZE);
 
   return cookie;
 }
