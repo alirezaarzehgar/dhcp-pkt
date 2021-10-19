@@ -105,7 +105,7 @@ pktTestFunctionOnAllPackets (pktCustomTest_t func)
     (pktDhcpPacket_t *)bufRequest,
     (pktDhcpPacket_t *)bufNak,
     (pktDhcpPacket_t *)bufMinimalDiscovery,
-  }; 
+  };
 
   for (size_t i = 0; i < sizeof (pkts) / sizeof (pktDhcpPacket_t *); i++)
     func (pkts[i], i);
